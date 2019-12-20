@@ -34,7 +34,7 @@ trainLM <- function(input,
                     lags = NULL,
                     events = NULL,
                     step = FALSE,
-                    step_arg = list(...),
+                    # step_arg = list(...),
                     scale = NULL){
 
   `%>%` <- magrittr::`%>%`
@@ -467,7 +467,7 @@ trainLM <- function(input,
                                    lags = lags,
                                    events = events,
                                    step = step,
-                                   step_arg = step_arg,
+                                   # step_arg = step_arg,
                                    scale = scale,
                                    frequency = freq),
                  series = df)
