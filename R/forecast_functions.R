@@ -472,7 +472,7 @@ trainLM <- function(input,
                                    frequency = freq),
                  series = df)
 
-  final_output <- base::structure(output, class = "trainML")
+  final_output <- base::structure(output, class = "trainLM")
 
   return(final_output)
 
