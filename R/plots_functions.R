@@ -1,6 +1,6 @@
 #' Plotting the residuals
 #' @export
-#' @param model A trainML object
+#' @param model A trainLM object
 #' @param na.rm A boolean, if TRUE will ignore missing values, by default set to FALSE
 #' @param margin A numeric, define the margin space between the subplot components
 #' @examples
@@ -14,8 +14,8 @@
 
 plot_res <- function(model, na.rm = FALSE, margin = 0.04){
   `%>%` <- magrittr::`%>%`
-  if(base::class(model) != "trainML"){
-    stop("The input model is not a 'trainML' object")
+  if(base::class(model) != "trainLM"){
+    stop("The input model is not a 'trainLM' object")
   }
 
 
