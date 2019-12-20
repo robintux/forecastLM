@@ -1,4 +1,4 @@
-#' Train a Forecasting Model with Regression Models
+#' Train a Forecasting Model with Linear Regression Model
 #' @export
 #' @param input A tsibble or ts object
 #' @param y A character, the column name of the depended variable of the input object, required (and applicable) only when the input is tsibble object
@@ -15,26 +15,25 @@
 #' @param lags A positive integer, defines the series lags to be used as input to the model (equivalent to AR process)
 #' @param events A list, an optional, create hot encoding variables based on date/time objects,
 #' where the date/time objects must align with the input object index class (may not work when the input object is 'ts'). For more information please see details
-#' @param method A character, defines the regression method to be used, currently only "lm" method is available
-#' @param method_arg A list, defines the argument of the selected method
+#' @param step A boolean, if set to TRUE will use apply the stepwise function for variable selection
 #' @param scale A character, scaling options of the series, methods available -
 #' c("log", "normal", "standard") for log transformation, normalization, or standardization of the series, respectively.
 #' If set to NULL (default), no transformation will occur
-#' @description Train a forecasting model with regression models
+#' @description Train a forecasting model with linear regression model
 #' @details XXXXXXXXXXX TBD XXXXXXXXXXXXXXXXXXX
 #' @examples
 
 
 
-trainML <- function(input,
+trainLM <- function(input,
                     y = NULL,
                     x = NULL,
                     seasonal = NULL,
                     trend = list(linear = TRUE, exponential = FALSE, log = FALSE, power = FALSE),
                     lags = NULL,
                     events = NULL,
-                    method =  "lm",
-                    method_arg = list(step = FALSE, direction = "both"),
+                    step = FALSE,
+                    step_direction = "both",
                     scale = NULL){
 
   `%>%` <- magrittr::`%>%`
