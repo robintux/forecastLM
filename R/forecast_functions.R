@@ -16,6 +16,7 @@
 #' @param events A list, an optional, create hot encoding variables based on date/time objects,
 #' where the date/time objects must align with the input object index class (may not work when the input object is 'ts'). For more information please see details
 #' @param step A boolean, if set to TRUE will use apply the stepwise function for variable selection
+#' @param step_arg A list, passing arguments to the `step` function
 #' @param scale A character, scaling options of the series, methods available -
 #' c("log", "normal", "standard") for log transformation, normalization, or standardization of the series, respectively.
 #' If set to NULL (default), no transformation will occur
@@ -33,7 +34,7 @@ trainLM <- function(input,
                     lags = NULL,
                     events = NULL,
                     step = FALSE,
-                    step_direction = "both",
+                    step_arg = list(...),
                     scale = NULL){
 
   `%>%` <- magrittr::`%>%`
@@ -415,7 +416,6 @@ trainLM <- function(input,
   }
 
 
-  if(method == "lm"){
     if(!base::is.null(x)){
       f <- stats::as.formula(paste(y, "~ ", paste0(x, collapse = " + "), "+", paste0(new_features, collapse = " + ")))
     } else{
@@ -427,15 +427,14 @@ trainLM <- function(input,
     }
 
 
-    if(method_arg$step){
+    if(step){
       md_init <- NULL
       md_init <- stats::lm(f, data = df1)
-      md <- step(md_init, direction = method_arg$direction)
+      md <- stats::step(md_init)
     } else(
       md <- stats::lm(f, data = df1)
     )
 
-  }
   if(base::is.null(scale)){
     fitted <- base::data.frame(index = df1[[base::attributes(df1)$index2]],
                                fitted = stats::predict(md, newdata = df1))
@@ -467,8 +466,8 @@ trainLM <- function(input,
                                    trend = trend,
                                    lags = lags,
                                    events = events,
-                                   method = method,
-                                   method_arg = method_arg,
+                                   step = step,
+                                   step_arg = step_arg,
                                    scale = scale,
                                    frequency = freq),
                  series = df)
