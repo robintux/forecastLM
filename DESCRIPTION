@@ -1,11 +1,29 @@
 Package: forecastLM
 Type: Package
-Title: What the Package Does (Title Case)
-Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+Title: Time Series Forecasting with Linear Regression Models
+Version: 0.0.0.9000
+Author: Rami Krispin
+Authors@R: person("Rami", "Krispin", email = "rami.krispin@gmail.com",
+  role = c("aut", "cre"))
+Maintainer: Rami Krispin <rami.krispin@gmail.com>
+Description: Provides a forecasting framework based on linear regression model
+License: MIT
 Encoding: UTF-8
 LazyData: true
+Depends:
+  R (>= 3.0.2)
+Imports:
+  dplyr(>= 0.8.1),
+  lubridate (>= 1.6.0),
+  magrittr (>= 1.5),
+  plotly (>= 4.9),
+  purrr (>= 0.3.2),
+  tsibble(>= 0.8.5)
+Suggests:
+    knitr,
+    rmarkdown,
+    remotes
+VignetteBuilder: knitr
+RoxygenNote: 6.1.1
+URL: https://github.com/RamiKrispin/forecastLM
+BugReports: https://github.com/RamiKrispin/forecastLM/issues
