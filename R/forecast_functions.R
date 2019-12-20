@@ -36,13 +36,12 @@ trainLM <- function(input,
                     step = FALSE,
                     # step_arg = list(...),
                     scale = NULL){
+  #----------------Set variable and functions----------------
 
   `%>%` <- magrittr::`%>%`
 
   freq <- md <- time_stamp <- new_features <- residuals <- NULL
-
-  # Error handling
-
+  #----------------Error handling----------------
   # Check the trend argument
 
   if(!base::is.list(trend) || !all(base::names(trend) %in% c("linear", "exponential", "log", "power"))){
@@ -80,7 +79,6 @@ trainLM <- function(input,
     }
   }
 
-
   # Check if the x variables are in the input obj
   if(!base::is.null(x)){
     if(!base::all(x %in% names(input))){
@@ -102,8 +100,8 @@ trainLM <- function(input,
       stop("The value of the 'scale' argument are not valid")
     }
   }
-
-  # Setting the input table
+  #----------------Setting the input table----------------
+  # Check the input class
   if(base::any(base::class(input) == "tbl_ts")){
     df <- input
   } else if(any(class(input) == "ts")){
@@ -122,7 +120,7 @@ trainLM <- function(input,
                      frequency = stats::frequency(df),
                      class = base::class(df[,time_stamp, drop = TRUE]))
 
-  # Checking the event argument
+   #----------------Checking the event argument----------------
   if(!base::is.null(events) && !base::is.list(events)){
     stop("The 'events' argument is not valid, please use list")
   } else if(!base::is.null(events) && base::is.list(events)){
@@ -136,7 +134,7 @@ trainLM <- function(input,
       }
     }
   }
-  # Scaling the series
+  #----------------Checking the scale argument----------------
   if(!base::is.null(scale)){
     y_temp <- NULL
     if(scale == "log"){
@@ -153,14 +151,10 @@ trainLM <- function(input,
       y <- "y_standard"
     }
   }
-
-
-
-  # Setting the frequency component
+  #----------------Setting the frequency component----------------
   if(!base::is.null(seasonal)){
 
     # Case series frequency is quarterly
-
     if(freq$unit == "quarter"){
       if(base::length(seasonal) == 1 & seasonal == "quarter"){
         df$quarter <- lubridate::quarter(df[[time_stamp]]) %>% base::factor(ordered = FALSE)
@@ -371,8 +365,7 @@ trainLM <- function(input,
     }
   }
 
-
-  # Setting the trend
+  #----------------Setting the trend----------------
   if(base::is.numeric(trend$power)){
     for(i in trend$power){
       df[[base::paste("trend_power_", i, sep = "")]] <- c(1:base::nrow(df)) ^ i
@@ -395,9 +388,7 @@ trainLM <- function(input,
     new_features <- c(new_features, "linear_trend")
   }
 
-
-
-  # Setting the lags variables
+  #----------------Setting the lags variables----------------
 
   if(!base::is.null(lags) && base::is.null(scale)){
     for(i in lags){
@@ -453,7 +444,7 @@ trainLM <- function(input,
 
 
 
-
+  #----------------Setting the output----------------
 
   output <- list(model = md,
                  fitted = fitted,
@@ -748,7 +739,7 @@ forecastLM <- function(model, newdata = NULL, h, pi = c(0.95, 0.80)){
                        forecast = tsibble::as_tsibble(forecast_df[, c(df_names, base::paste0("lower", pi_lower), "yhat", c(base::paste0("upper", pi_upper)))],
                                                       index = model$parameters$index))
 
-  final_output <- base::structure(output, class = "forecastML")
+  final_output <- base::structure(output, class = "forecastLM")
   return(final_output)
 
 }
