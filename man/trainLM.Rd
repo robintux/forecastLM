@@ -6,8 +6,7 @@
 \usage{
 trainLM(input, y = NULL, x = NULL, seasonal = NULL,
   trend = list(linear = TRUE, exponential = FALSE, log = FALSE, power =
-  FALSE), lags = NULL, events = NULL, step = FALSE,
-  step_direction = "both", scale = NULL)
+  FALSE), lags = NULL, events = NULL, step = FALSE, scale = NULL)
 }
 \arguments{
 \item{input}{A tsibble or ts object}
@@ -37,6 +36,8 @@ where the date/time objects must align with the input object index class (may no
 \item{scale}{A character, scaling options of the series, methods available -
 c("log", "normal", "standard") for log transformation, normalization, or standardization of the series, respectively.
 If set to NULL (default), no transformation will occur}
+
+\item{step_arg}{A list, passing arguments to the `step` function}
 }
 \description{
 Train a forecasting model with linear regression model
