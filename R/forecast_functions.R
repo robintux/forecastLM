@@ -477,3 +477,279 @@ trainLM <- function(input,
   return(final_output)
 
 }
+
+#' Forecast trainML Model
+#' @export
+#' @param model A trainLM object
+#' @param newdata A tsibble object, must be used when the input model was trained with external inputs (i.e., the 'x' argument of the trainML function was used). This input must follow the following structure:
+#'
+#' - Use the same time intervals (monthly, daily, hourly, etc.) structure and timestamp class (e.g., yearquarter, yearmonth, POSIXct, etc.) as the original input
+#'
+#' - The number of observations must align with the forecasting horizon (the 'h' argument)
+#'
+#' -  The timestamp of the first observation must be the consecutive observation of the last observation of the original series
+#' @param h An integer, define the forecast horizon
+#' @param pi A vector with numeric values between 0 and 1, define the level of the confidence of the prediction intervals of the forecast. By default calculate the 80% and 95% prediction intervals
+
+forecastLM <- function(model, newdata = NULL, h, pi = c(0.95, 0.80)){
+
+  `%>%` <- magrittr::`%>%`
+
+  forecast_df <- df_names <- NULL
+
+  # Error handling
+  if(class(model) != "trainLM"){
+    stop("The input model is invalid, must be a 'trainLM' object")
+  }
+
+  if(!base::is.numeric(pi) || base::any(pi <=0) || base::any(pi >= 1)){
+    stop("The value of the 'pi' argument is not valid")
+  }
+
+  if(base::is.null(h)){
+    stop("The forecast horizon argument, 'h', is missing")
+  } else if(!base::is.numeric(h)){
+    stop("The forecast horizon argument, 'h', must be integer")
+  } else if(h %% 1 != 0){
+    stop("The forecast horizon argument, 'h', must be integer")
+  }
+
+  if(!base::is.null(model$parameters$x) && base::is.null(newdata)){
+    stop("The input model was trained with regressors, the 'newdata' argument must align to the 'x' argument of the trained model")
+  } else if(!base::is.null(model$parameters$x) && !base::all(model$parameters$x %in% base::names(newdata))){
+    stop("The columns names of the 'newdata' input is not aligned with the variables names that was used on the training process")
+  } else if(!base::is.null(model$parameters$x) && !base::is.null(newdata) && base::nrow(newdata) != h){
+    warning("The length of the input data ('newdata') is not aligned with the forecast horizon ('h'). Setting the forecast horizon as the number of rows of the input data.")
+    h <- base::nrow(newdata)
+  }
+
+
+
+  # Creating new features for the forecast data frame
+  if(model$parameters$frequency$unit == "year"){
+    start_date <- base::max(model$series[[base::attributes(model$series)$index2]]) + model$parameters$frequency$value
+    forecast_df <- base::data.frame(index = base::seq(from = start_date,
+                                                      by = model$parameters$frequency$value,
+                                                      length.out = h)) %>%
+      stats::setNames(model$parameters$index)
+  } else if(model$parameters$frequency$unit == "quarter"){
+    start_date <- base::max(model$series[[base::attributes(model$series)$index2]]) + lubridate::quarter(model$parameters$frequency$value)
+    forecast_df <- base::data.frame(index = base::seq(from = start_date,
+                                                      by = model$parameters$frequency$value,
+                                                      length.out = h)) %>%
+      stats::setNames(model$parameters$index)
+  } else if(model$parameters$frequency$unit == "month"){
+    start_date <- base::max(model$series[[base::attributes(model$series)$index2]]) + lubridate::month(model$parameters$frequency$value)
+    forecast_df <- base::data.frame(index = base::seq(from = start_date,
+                                                      by = model$parameters$frequency$value,
+                                                      length.out = h)) %>%
+      stats::setNames(model$parameters$index)
+  } else if(model$parameters$frequency$unit == "week"){
+    start_date <- base::max(model$series[[base::attributes(model$series)$index2]]) + model$parameters$frequency$value
+    forecast_df <- base::data.frame(index = base::seq(from = start_date,
+                                                      by = model$parameters$frequency$value,
+                                                      length.out = h)) %>%
+      stats::setNames(model$parameters$index)
+  } else if(model$parameters$frequency$unit == "day"){
+    start_date <- base::max(model$series[[base::attributes(model$series)$index2]]) + lubridate::days(model$parameters$frequency$value)
+    forecast_df <- base::data.frame(index = base::seq(from = start_date,
+                                                      by = model$parameters$frequency$value,
+                                                      length.out = h)) %>%
+      stats::setNames(model$parameters$index)
+  } else if(model$parameters$frequency$unit == "hour"){
+    start_date <- base::max(model$series[[base::attributes(model$series)$index2]]) + lubridate::hours(model$parameters$frequency$value)
+    forecast_df <- base::data.frame(index = base::seq.POSIXt(from = start_date,
+                                                             by = model$parameters$frequency$unit,
+                                                             length.out = h)) %>%
+      stats::setNames(model$parameters$index)
+  } else if(model$parameters$frequency$unit == "minute"){
+    start_date <- base::max(model$series[[base::attributes(model$series)$index2]]) + lubridate::minutes(model$parameters$frequency$value)
+    forecast_df <- base::data.frame(index = base::seq.POSIXt(from = start_date,
+                                                             by = base::paste(model$parameters$frequency$value ,"min"),
+                                                             length.out = h)) %>%
+      stats::setNames(model$parameters$index)
+  }
+
+  if(!base::is.null(model$parameters$events)){
+    events <- NULL
+    events <- model$parameters$events
+    for(n in base::names(events)){
+      forecast_df[n] <- 0
+      forecast_df[base::which(forecast_df[,model$parameters$index , drop = TRUE] %in% events[[n]]), n] <- 1
+
+    }
+  }
+
+  # Setting the seasonal arguments
+  seasonal <- model$parameters$seasonal
+
+  if(!base::is.null(seasonal)){
+    if("minute" %in% seasonal){
+      forecast_df$minute <- (lubridate::hour(forecast_df[[model$parameters$index]]) * 2 + (lubridate::minute(forecast_df[[model$parameters$index]]) + freq$value )/ freq$value) %>%
+        base::factor(ordered = FALSE)
+    }
+
+    if("hour" %in% seasonal){
+      forecast_df$hour <- (lubridate::hour(forecast_df[[model$parameters$index]]) + 1) %>% base::factor(ordered = FALSE)
+    }
+
+    if("wday" %in% seasonal){
+      forecast_df$wday <- lubridate::wday(forecast_df[[model$parameters$index]], label = TRUE) %>% base::factor(ordered = FALSE)
+    }
+
+    if("yday" %in% seasonal){
+      forecast_df$yday <- lubridate::yday(forecast_df[[model$parameters$index]]) %>% base::factor(ordered = FALSE)
+    }
+
+    if("week" %in% seasonal){
+      forecast_df$week <- lubridate::week(forecast_df[[model$parameters$index]]) %>% base::factor(ordered = FALSE)
+    }
+
+    if("month" %in% seasonal){
+      forecast_df$month <- lubridate::month(forecast_df[[model$parameters$index]], label = TRUE) %>% base::factor(ordered = FALSE)
+    }
+
+    if("quarter" %in% seasonal){
+      forecast_df$quarter <- lubridate::quarter(forecast_df[[model$parameters$index]]) %>% base::factor(ordered = FALSE)
+    }
+
+  }
+  # Setting the trend arguments
+  trend <- trend_start <- trend_end <- NULL
+  trend <- model$parameters$trend
+  trend_start <- base::nrow(model$series) + 1
+  trend_end <- trend_start + base::nrow(forecast_df) - 1
+
+  if(base::is.numeric(trend$power)){
+    for(i in trend$power){
+      forecast_df[[base::paste("trend_power_", i, sep = "")]] <- c(trend_start:trend_end) ^ i
+    }
+  }
+
+  if(trend$exponential){
+    forecast_df$exp_trend <- base::exp(trend_start:trend_end)
+  }
+
+  if(trend$log){
+    forecast_df$log_trend <- base::log(trend_start:trend_end)
+  }
+
+  if(trend$linear){
+    forecast_df$linear_trend <- trend_start:trend_end
+  }
+
+  if(!base::is.null(model$parameters$lags) && base::is.null(model$parameters$scale)){
+    for(i in model$parameters$lags){
+      forecast_df[[base::paste("lag_", i, sep = "")]] <- utils::tail(model$series[[model$parameters$y]], i)[1:base::nrow(forecast_df)]
+    }
+  } else  if(!base::is.null(model$parameters$lags) && !base::is.null(model$parameters$scale)){
+    if(model$parameters$scale == "log"){
+      for(i in model$parameters$lags){
+        forecast_df[[base::paste("lag_scale", i, sep = "")]] <- base::log(utils::tail(model$series[[model$parameters$y]], i)[1:base::nrow(forecast_df)])
+      }
+    }
+  }
+
+  df_names <- base::names(forecast_df)
+
+  if(!base::is.null(model$parameters$x) && !base::is.null(newdata)){
+    forecast_df <- forecast_df %>% dplyr::left_join(newdata, by = model$parameters$index)
+  }
+
+  if(model$parameters$method == "lm"){
+    if(base::is.null(model$parameters$scale)){
+      forecast_df$yhat <- NA
+
+      if(!base::is.null(model$parameters$lags)){
+        for(i in 1:base::nrow(forecast_df)){
+          for(p in base::seq_along(pi)){
+            fit <- NULL
+            fit <- stats::predict(model$model, newdata = forecast_df[i,],
+                                  se.fit = TRUE,
+                                  interval = "prediction",
+                                  level = pi[p])
+
+            forecast_df[[base::paste("lower", 100 * pi[p], sep = "")]][i] <- fit$fit[,"lwr"]
+            forecast_df[[base::paste("upper", 100 * pi[p], sep = "")]][i] <- fit$fit[,"upr"]
+          }
+          forecast_df$yhat[i] <- fit$fit[,"fit"]
+          for(l in model$parameters$lags){
+            if(i + l <= base::nrow(forecast_df)){
+              forecast_df[[base::paste("lag_", l, sep = "")]][i + l] <- forecast_df$yhat[i]
+            }
+          }
+
+        }
+      } else {
+        for(p in base::seq_along(pi)){
+          fit <- NULL
+          fit <- stats::predict(model$model, newdata = forecast_df,
+                                se.fit = TRUE,
+                                interval = "prediction",
+                                level = pi[p])
+
+          forecast_df[[base::paste("lower", 100 * pi[p], sep = "")]] <- fit$fit[,"lwr"]
+          forecast_df[[base::paste("upper", 100 * pi[p], sep = "")]] <- fit$fit[,"upr"]
+        }
+        forecast_df$yhat <- fit$fit[,"fit"]
+      }
+    } else if(!base::is.null(model$parameters$scale)){
+      forecast_df$yhat <- NA
+
+      if(!base::is.null(model$parameters$lags) && model$parameters$scale == "log"){
+        for(i in 1:base::nrow(forecast_df)){
+          for(p in base::seq_along(pi)){
+            fit <- NULL
+            fit <- stats::predict(model$model, newdata = forecast_df[i,],
+                                  se.fit = TRUE,
+                                  interval = "prediction",
+                                  level = pi[p])
+
+            forecast_df[[base::paste("lower", 100 * pi[p], sep = "")]][i] <- base::exp(fit$fit[,"lwr"])
+            forecast_df[[base::paste("upper", 100 * pi[p], sep = "")]][i] <- base::exp(fit$fit[,"upr"])
+          }
+
+          forecast_df$yhat[i] <- base::exp(fit$fit[,"fit"])
+
+          for(l in model$parameters$lags){
+            if(i + l <= base::nrow(forecast_df)){
+              forecast_df[[base::paste("lag_scale", l, sep = "")]][i + l] <- fit$fit[,"fit"]
+            }
+          }
+
+        }
+      } else {
+        for(p in base::seq_along(pi)){
+          fit <- NULL
+          fit <- stats::predict(model$model, newdata = forecast_df,
+                                se.fit = TRUE,
+                                interval = "prediction",
+                                level = pi[p])
+
+          forecast_df[[base::paste("lower", 100 * pi[p], sep = "")]] <- base::exp(fit$fit[,"lwr"])
+          forecast_df[[base::paste("upper", 100 * pi[p], sep = "")]] <- base::exp(fit$fit[,"upr"])
+        }
+        forecast_df$yhat <- exp(fit$fit[,"fit"])
+      }
+
+    }
+  }
+
+  pi_lower <- 100 * base::sort(pi, decreasing = TRUE)
+  pi_upper <- 100 * base::sort(pi, decreasing = FALSE)
+  output <- base::list(model = model$model,
+                       parameters = base::list(h = h,
+                                               pi = pi,
+                                               method = model$parameters$method,
+                                               scale = model$parameters$scale,
+                                               y = model$parameters$y,
+                                               x = model$parameters$x,
+                                               index = model$parameters$index),
+                       actual = model$series,
+                       forecast = tsibble::as_tsibble(forecast_df[, c(df_names, base::paste0("lower", pi_lower), "yhat", c(base::paste0("upper", pi_upper)))],
+                                                      index = model$parameters$index))
+
+  final_output <- base::structure(output, class = "forecastML")
+  return(final_output)
+
+}
