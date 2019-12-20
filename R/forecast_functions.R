@@ -517,6 +517,13 @@ forecastLM <- function(model, newdata = NULL, h, pi = c(0.95, 0.80)){
 
 
   # Creating new features for the forecast data frame
+
+  ############
+  ########### use new_data() function
+  ###########
+
+
+
   if(model$parameters$frequency$unit == "year"){
     start_date <- base::max(model$series[[base::attributes(model$series)$index2]]) + model$parameters$frequency$value
     forecast_df <- base::data.frame(index = base::seq(from = start_date,
@@ -526,12 +533,12 @@ forecastLM <- function(model, newdata = NULL, h, pi = c(0.95, 0.80)){
   } else if(model$parameters$frequency$unit == "quarter"){
     start_date <- base::max(model$series[[base::attributes(model$series)$index2]]) + lubridate::quarter(model$parameters$frequency$value)
     forecast_df <- base::data.frame(index = base::seq(from = start_date,
-                                                      by = model$parameters$frequency$value,
+                                                      by = tsibble::interval_pull(model$series$index),
                                                       length.out = h)) %>%
       stats::setNames(model$parameters$index)
   } else if(model$parameters$frequency$unit == "month"){
     start_date <- base::max(model$series[[base::attributes(model$series)$index2]]) + lubridate::month(model$parameters$frequency$value)
-    forecast_df <- base::data.frame(index = base::seq(from = start_date,
+    forecast_df <- base::data.frame(index = base::seq.Date(from = start_date,
                                                       by = model$parameters$frequency$unit,
                                                       length.out = h)) %>%
       stats::setNames(model$parameters$index)
