@@ -120,7 +120,7 @@ trainLM <- function(input,
                      frequency = stats::frequency(df),
                      class = base::class(df[,time_stamp, drop = TRUE]))
 
-   #----------------Checking the event argument----------------
+  #----------------Checking the event argument----------------
   if(!base::is.null(events) && !base::is.list(events)){
     stop("The 'events' argument is not valid, please use list")
   } else if(!base::is.null(events) && base::is.list(events)){
@@ -532,7 +532,7 @@ forecastLM <- function(model, newdata = NULL, h, pi = c(0.95, 0.80)){
   } else if(model$parameters$frequency$unit == "month"){
     start_date <- base::max(model$series[[base::attributes(model$series)$index2]]) + lubridate::month(model$parameters$frequency$value)
     forecast_df <- base::data.frame(index = base::seq(from = start_date,
-                                                      by = model$parameters$frequency$value,
+                                                      by = model$parameters$frequency$unit,
                                                       length.out = h)) %>%
       stats::setNames(model$parameters$index)
   } else if(model$parameters$frequency$unit == "week"){
