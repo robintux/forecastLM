@@ -483,12 +483,12 @@ trainLM <- function(input,
 #' @param pi A vector with numeric values between 0 and 1, define the level of the confidence of the prediction intervals of the forecast. By default calculate the 80% and 95% prediction intervals
 
 forecastLM <- function(model, newdata = NULL, h, pi = c(0.95, 0.80)){
-
+  #----------------Set variables and functions----------------
   `%>%` <- magrittr::`%>%`
 
   forecast_df <- df_names <- NULL
+  #---------------- Error handling ----------------
 
-  # Error handling
   if(class(model) != "trainLM"){
     stop("The input model is invalid, must be a 'trainLM' object")
   }
@@ -514,60 +514,12 @@ forecastLM <- function(model, newdata = NULL, h, pi = c(0.95, 0.80)){
     h <- base::nrow(newdata)
   }
 
+  #---------------- Build future data.frame ----------------
 
+  # Create the index
+  forecast_df <- tsibble::new_data(model$series, n = h)
 
-  # Creating new features for the forecast data frame
-
-  ############
-  ########### use new_data() function
-  ###########
-
-
-
-  if(model$parameters$frequency$unit == "year"){
-    start_date <- base::max(model$series[[base::attributes(model$series)$index2]]) + model$parameters$frequency$value
-    forecast_df <- base::data.frame(index = base::seq(from = start_date,
-                                                      by = model$parameters$frequency$value,
-                                                      length.out = h)) %>%
-      stats::setNames(model$parameters$index)
-  } else if(model$parameters$frequency$unit == "quarter"){
-    start_date <- base::max(model$series[[base::attributes(model$series)$index2]]) + lubridate::quarter(model$parameters$frequency$value)
-    forecast_df <- base::data.frame(index = base::seq(from = start_date,
-                                                      by = tsibble::interval_pull(model$series$index),
-                                                      length.out = h)) %>%
-      stats::setNames(model$parameters$index)
-  } else if(model$parameters$frequency$unit == "month"){
-    start_date <- base::max(model$series[[base::attributes(model$series)$index2]]) + lubridate::month(model$parameters$frequency$value)
-    forecast_df <- base::data.frame(index = base::seq.Date(from = start_date,
-                                                      by = model$parameters$frequency$unit,
-                                                      length.out = h)) %>%
-      stats::setNames(model$parameters$index)
-  } else if(model$parameters$frequency$unit == "week"){
-    start_date <- base::max(model$series[[base::attributes(model$series)$index2]]) + model$parameters$frequency$value
-    forecast_df <- base::data.frame(index = base::seq(from = start_date,
-                                                      by = model$parameters$frequency$value,
-                                                      length.out = h)) %>%
-      stats::setNames(model$parameters$index)
-  } else if(model$parameters$frequency$unit == "day"){
-    start_date <- base::max(model$series[[base::attributes(model$series)$index2]]) + lubridate::days(model$parameters$frequency$value)
-    forecast_df <- base::data.frame(index = base::seq(from = start_date,
-                                                      by = model$parameters$frequency$value,
-                                                      length.out = h)) %>%
-      stats::setNames(model$parameters$index)
-  } else if(model$parameters$frequency$unit == "hour"){
-    start_date <- base::max(model$series[[base::attributes(model$series)$index2]]) + lubridate::hours(model$parameters$frequency$value)
-    forecast_df <- base::data.frame(index = base::seq.POSIXt(from = start_date,
-                                                             by = model$parameters$frequency$unit,
-                                                             length.out = h)) %>%
-      stats::setNames(model$parameters$index)
-  } else if(model$parameters$frequency$unit == "minute"){
-    start_date <- base::max(model$series[[base::attributes(model$series)$index2]]) + lubridate::minutes(model$parameters$frequency$value)
-    forecast_df <- base::data.frame(index = base::seq.POSIXt(from = start_date,
-                                                             by = base::paste(model$parameters$frequency$value ,"min"),
-                                                             length.out = h)) %>%
-      stats::setNames(model$parameters$index)
-  }
-
+  # Add events
   if(!base::is.null(model$parameters$events)){
     events <- NULL
     events <- model$parameters$events
