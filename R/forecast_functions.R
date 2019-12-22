@@ -134,7 +134,7 @@ trainLM <- function(input,
       }
     }
   }
-  #----------------Checking the scale argument----------------
+  #----------------Scalling the series----------------
   if(!base::is.null(scale)){
     y_temp <- NULL
     if(scale == "log"){
@@ -142,8 +142,12 @@ trainLM <- function(input,
       y_temp <- y
       y <- base::paste(y,"log", sep = "_")
     } else if(scale == "normal"){
-      df[[base::paste(y,"normal", sep = "_")]] <- (df[[y]] - base::min(df[[y]])) /
-        (base::max(df[[y]]) - base::min(df[[y]]))
+      # Set the transformation weights
+      normal_min <- base::min(df[[y]])
+      normal_max <- base::max(df[[y]])
+
+      df[[base::paste(y,"normal", sep = "_")]] <- (df[[y]] - normal_min) /
+        (normal_max - normal_min)
       y_temp <- y
       y <- base::paste(y,"normal", sep = "_")
     } else if(scale == "standard"){
@@ -428,6 +432,7 @@ trainLM <- function(input,
     md <- stats::lm(f, data = df1)
   )
 
+  #----------------Rescale the output ----------------
   if(base::is.null(scale)){
     fitted <- base::data.frame(index = df1[[base::attributes(df1)$index2]],
                                fitted = stats::predict(md, newdata = df1))
@@ -436,6 +441,13 @@ trainLM <- function(input,
                                   residuals =  df1[[y]] -  fitted$fitted) %>%
       tsibble::as_tsibble(index = "index")
   } else if(!base::is.null(scale) && scale == "log"){
+    fitted <- base::data.frame(index = df1[[base::attributes(df1)$index2]],
+                               fitted = (stats::predict(md, newdata = df1)) * (normal_max - normal_min)  +  normal_min)
+
+    residuals <- base::data.frame(index = df1[[base::attributes(df1)$index2]],
+                                  residuals =  df1[[y]] -  fitted$fitted) %>%
+      tsibble::as_tsibble(index = "index")
+  } else if(!base::is.null(scale) && scale == "normal"){
     fitted <- base::data.frame(index = df1[[base::attributes(df1)$index2]],
                                fitted = base::exp(stats::predict(md, newdata = df1)))
 
