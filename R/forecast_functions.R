@@ -142,13 +142,15 @@ trainLM <- function(input,
       y_temp <- y
       y <- base::paste(y,"log", sep = "_")
     } else if(scale == "normal"){
-      df$y_normal <- (df$y - base::min(df$y)) / (base::max(df$y) - base::min(df$y))
+      df[[base::paste(y,"normal", sep = "_")]] <- (df[[y]] - base::min(df[[y]])) /
+        (base::max(df[[y]]) - base::min(df[[y]]))
       y_temp <- y
-      y <- "y_normal"
+      y <- base::paste(y,"normal", sep = "_")
     } else if(scale == "standard"){
-      df$y_standard <- (df$y - base::mean(df$y)) / stats::sd(df$y)
+      df[[base::paste(y,"standard", sep = "_")]] <- (df[[y]] - base::mean(df[[y]])) /
+        stats::sd(df[[y]])
       y_temp <- y
-      y <- "y_standard"
+      y <- base::paste(y,"standard", sep = "_")
     }
   }
   #----------------Setting the frequency component----------------
