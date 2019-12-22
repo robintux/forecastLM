@@ -706,7 +706,7 @@ forecastLM <- function(model, newdata = NULL, h, pi = c(0.95, 0.80)){
             (model$parameters$scaling_parameters$normal_max - model$parameters$scaling_parameters$normal_min) +
               model$parameters$scaling_parameters$normal_min
 
-            forecast_df$yhat[i] <-xit$fit[,"fit"] *
+            forecast_df$yhat[i] <-fit$fit[,"fit"] *
               (model$parameters$scaling_parameters$normal_max - model$parameters$scaling_parameters$normal_min) +
               model$parameters$scaling_parameters$normal_min
 
@@ -715,7 +715,7 @@ forecastLM <- function(model, newdata = NULL, h, pi = c(0.95, 0.80)){
               model$parameters$scaling_parameters$standard_sd + model$parameters$scaling_parameters$standard_mean
             forecast_df[[base::paste("upper", 100 * pi[p], sep = "")]][i] <- fit$fit[,"upr"]  *
               model$parameters$scaling_parameters$standard_sd + model$parameters$scaling_parameters$standard_mean
-            forecast_df$yhat[i] <-xit$fit[,"fit"]  *
+            forecast_df$yhat[i] <-fit$fit[,"fit"]  *
               model$parameters$scaling_parameters$standard_sd + model$parameters$scaling_parameters$standard_mean
           }
         }
