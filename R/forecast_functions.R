@@ -737,11 +737,34 @@ forecastLM <- function(model, newdata = NULL, h, pi = c(0.95, 0.80)){
                               se.fit = TRUE,
                               interval = "prediction",
                               level = pi[p])
-
+        if(model$parameters$scale == "log"){
         forecast_df[[base::paste("lower", 100 * pi[p], sep = "")]] <- base::exp(fit$fit[,"lwr"])
         forecast_df[[base::paste("upper", 100 * pi[p], sep = "")]] <- base::exp(fit$fit[,"upr"])
+        } else if(model$parameters$scale == "normal"){
+          forecast_df[[base::paste("lower", 100 * pi[p], sep = "")]] <- fit$fit[,"lwr"] *
+            (model$parameters$scaling_parameters$normal_max - model$parameters$scaling_parameters$normal_min) +
+            model$parameters$scaling_parameters$normal_min
+          forecast_df[[base::paste("upper", 100 * pi[p], sep = "")]] <- fit$fit[,"upr"] *
+            (model$parameters$scaling_parameters$normal_max - model$parameters$scaling_parameters$normal_min) +
+            model$parameters$scaling_parameters$normal_min
+        } else if(model$parameters$scale == "standard"){
+          forecast_df[[base::paste("lower", 100 * pi[p], sep = "")]] <- fit$fit[,"lwr"] *
+            model$parameters$scaling_parameters$standard_sd + model$parameters$scaling_parameters$standard_mean
+          forecast_df[[base::paste("upper", 100 * pi[p], sep = "")]] <- fit$fit[,"upr"] *
+            model$parameters$scaling_parameters$standard_sd + model$parameters$scaling_parameters$standard_mean
+        }
       }
-      forecast_df$yhat <- exp(fit$fit[,"fit"])
+
+      if(model$parameters$scale == "log"){
+      forecast_df$yhat <- base::exp(fit$fit[,"fit"])
+      } else if(model$parameters$scale == "normal"){
+        forecast_df$yhat <- fit$fit[,"fit"] *
+          (model$parameters$scaling_parameters$normal_max - model$parameters$scaling_parameters$normal_min) +
+          model$parameters$scaling_parameters$normal_min
+      } else if(model$parameters$scale == "standard"){
+        forecast_df$yhat <- fit$fit[,"fit"] *
+          model$parameters$scaling_parameters$standard_sd + model$parameters$scaling_parameters$standard_mean
+      }
     }
 
   }
