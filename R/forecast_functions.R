@@ -692,25 +692,31 @@ forecastLM <- function(model, newdata = NULL, h, pi = c(0.95, 0.80)){
                                 se.fit = TRUE,
                                 interval = "prediction",
                                 level = pi[p])
-
+          scaling_parameters$standard_mean
           if(model$parameters$scale == "log"){
             forecast_df[[base::paste("lower", 100 * pi[p], sep = "")]][i] <- base::exp(fit$fit[,"lwr"])
             forecast_df[[base::paste("upper", 100 * pi[p], sep = "")]][i] <- base::exp(fit$fit[,"upr"])
             forecast_df$yhat[i] <- base::exp(fit$fit[,"fit"])
           } else if(model$parameters$scale == "normal"){
             forecast_df[[base::paste("lower", 100 * pi[p], sep = "")]][i] <- fit$fit[,"lwr"] *
-              (model$parameters$scale$normal_max - model$parameters$scale$normal_min) +  model$parameters$scale$normal_min
+              (model$parameters$scaling_parameters$normal_max - model$parameters$scaling_parameters$normal_min) +
+              model$parameters$scaling_parameters$normal_min
+
             forecast_df[[base::paste("upper", 100 * pi[p], sep = "")]][i] <- fit$fit[,"upr"] *
-            (model$parameters$scale$normal_max - model$parameters$scale$normal_min) +  model$parameters$scale$normal_min
+            (model$parameters$scaling_parameters$normal_max - model$parameters$scaling_parameters$normal_min) +
+              model$parameters$scaling_parameters$normal_min
+
             forecast_df$yhat[i] <-xit$fit[,"fit"] *
-              (model$parameters$scale$normal_max - model$parameters$scale$normal_min) +  model$parameters$scale$normal_min
+              (model$parameters$scaling_parameters$normal_max - model$parameters$scaling_parameters$normal_min) +
+              model$parameters$scaling_parameters$normal_min
+
           } else if(model$parameters$scale == "standard"){
             forecast_df[[base::paste("lower", 100 * pi[p], sep = "")]][i] <- fit$fit[,"lwr"] *
-              model$parameters$scale$standard_sd + model$parameters$scale$standard_mean
+              model$parameters$scaling_parameters$standard_sd + model$parameters$scaling_parameters$standard_mean
             forecast_df[[base::paste("upper", 100 * pi[p], sep = "")]][i] <- fit$fit[,"upr"]  *
-              model$parameters$scale$standard_sd + model$parameters$scale$standard_mean
+              model$parameters$scaling_parameters$standard_sd + model$parameters$scaling_parameters$standard_mean
             forecast_df$yhat[i] <-xit$fit[,"fit"]  *
-              model$parameters$scale$standard_sd + model$parameters$scale$standard_mean
+              model$parameters$scaling_parameters$standard_sd + model$parameters$scaling_parameters$standard_mean
           }
         }
 
