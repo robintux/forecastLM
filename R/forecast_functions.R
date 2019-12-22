@@ -641,9 +641,10 @@ forecastLM <- function(model, newdata = NULL, h, pi = c(0.95, 0.80)){
     forecast_df <- forecast_df %>% dplyr::left_join(newdata, by = model$parameters$index)
   }
 
+  # If scale is NULL
   if(base::is.null(model$parameters$scale)){
     forecast_df$yhat <- NA
-
+    # If lags are being used
     if(!base::is.null(model$parameters$lags)){
       for(i in 1:base::nrow(forecast_df)){
         for(p in base::seq_along(pi)){
@@ -664,6 +665,7 @@ forecastLM <- function(model, newdata = NULL, h, pi = c(0.95, 0.80)){
         }
 
       }
+      # If lags are not being used
     } else {
       for(p in base::seq_along(pi)){
         fit <- NULL
@@ -677,10 +679,12 @@ forecastLM <- function(model, newdata = NULL, h, pi = c(0.95, 0.80)){
       }
       forecast_df$yhat <- fit$fit[,"fit"]
     }
+    # If scale is not NULL
   } else if(!base::is.null(model$parameters$scale)){
     forecast_df$yhat <- NA
 
-    if(!base::is.null(model$parameters$lags) && model$parameters$scale == "log"){
+    # If lags are being used
+    if(!base::is.null(model$parameters$lags)){
       for(i in 1:base::nrow(forecast_df)){
         for(p in base::seq_along(pi)){
           fit <- NULL
@@ -689,12 +693,29 @@ forecastLM <- function(model, newdata = NULL, h, pi = c(0.95, 0.80)){
                                 interval = "prediction",
                                 level = pi[p])
 
-          forecast_df[[base::paste("lower", 100 * pi[p], sep = "")]][i] <- base::exp(fit$fit[,"lwr"])
-          forecast_df[[base::paste("upper", 100 * pi[p], sep = "")]][i] <- base::exp(fit$fit[,"upr"])
+          if(model$parameters$scale == "log"){
+            forecast_df[[base::paste("lower", 100 * pi[p], sep = "")]][i] <- base::exp(fit$fit[,"lwr"])
+            forecast_df[[base::paste("upper", 100 * pi[p], sep = "")]][i] <- base::exp(fit$fit[,"upr"])
+            forecast_df$yhat[i] <- base::exp(fit$fit[,"fit"])
+          } else if(model$parameters$scale == "normal"){
+            forecast_df[[base::paste("lower", 100 * pi[p], sep = "")]][i] <- fit$fit[,"lwr"] *
+              (model$parameters$scale$normal_max - model$parameters$scale$normal_min) +  model$parameters$scale$normal_min
+            forecast_df[[base::paste("upper", 100 * pi[p], sep = "")]][i] <- fit$fit[,"upr"] *
+            (model$parameters$scale$normal_max - model$parameters$scale$normal_min) +  model$parameters$scale$normal_min
+            forecast_df$yhat[i] <-xit$fit[,"fit"] *
+              (model$parameters$scale$normal_max - model$parameters$scale$normal_min) +  model$parameters$scale$normal_min
+          } else if(model$parameters$scale == "standard"){
+            forecast_df[[base::paste("lower", 100 * pi[p], sep = "")]][i] <- fit$fit[,"lwr"] *
+              model$parameters$scale$standard_sd + model$parameters$scale$standard_mean
+            forecast_df[[base::paste("upper", 100 * pi[p], sep = "")]][i] <- fit$fit[,"upr"]  *
+              model$parameters$scale$standard_sd + model$parameters$scale$standard_mean
+            forecast_df$yhat[i] <-xit$fit[,"fit"]  *
+              model$parameters$scale$standard_sd + model$parameters$scale$standard_mean
+          }
         }
 
-        forecast_df$yhat[i] <- base::exp(fit$fit[,"fit"])
 
+        # Updating the lags values with new predictions
         for(l in model$parameters$lags){
           if(i + l <= base::nrow(forecast_df)){
             forecast_df[[base::paste("lag_scale", l, sep = "")]][i + l] <- fit$fit[,"fit"]
@@ -702,6 +723,7 @@ forecastLM <- function(model, newdata = NULL, h, pi = c(0.95, 0.80)){
         }
 
       }
+      # If lags are not being used
     } else {
       for(p in base::seq_along(pi)){
         fit <- NULL
