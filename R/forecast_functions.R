@@ -22,7 +22,6 @@
 #' If set to NULL (default), no transformation will occur
 #' @description Train a forecasting model with linear regression model
 #' @details XXXXXXXXXXX TBD XXXXXXXXXXXXXXXXXXX
-#' @examples
 
 
 
@@ -629,13 +628,9 @@ forecastLM <- function(model, newdata = NULL, h, pi = c(0.95, 0.80)){
       forecast_df[[base::paste("lag_", i, sep = "")]] <- utils::tail(model$series[[model$parameters$y]], i)[1:base::nrow(forecast_df)]
     }
   } else if(!base::is.null(model$parameters$lags) && !base::is.null(model$parameters$scale)){
-    if(model$parameters$scale == "log"){
+    if(!base::is.null(model$parameters$scale)){
       for(i in model$parameters$lags){
-        forecast_df[[base::paste("lag_scale", i, sep = "")]] <- base::log(utils::tail(model$series[[model$parameters$y]], i)[1:base::nrow(forecast_df)])
-      }
-    } else if(model$parameters$scale == "normal"){
-      for(i in model$parameters$lags){
-        forecast_df[[base::paste("lag_scale", i, sep = "")]] <- base::log(utils::tail(model$series[[model$parameters$y]], i)[1:base::nrow(forecast_df)])
+        forecast_df[[base::paste("lag_scale", i, sep = "")]] <- utils::tail(model$series[[base::paste("lag_scale", i, sep = "")]], i)[1:base::nrow(forecast_df)]
       }
     }
   }
