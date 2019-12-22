@@ -40,7 +40,7 @@ trainLM <- function(input,
 
   `%>%` <- magrittr::`%>%`
 
-  freq <- md <- time_stamp <- new_features <- residuals <- NULL
+  freq <- md <- time_stamp <- new_features <- residuals <- scaling_parameters <- NULL
   #----------------Error handling----------------
   # Check the trend argument
 
@@ -141,10 +141,12 @@ trainLM <- function(input,
       df[[base::paste(y,"log", sep = "_")]] <- base::log(df[[y]])
       y_temp <- y
       y <- base::paste(y,"log", sep = "_")
+      scaling_parameters <- NULL
     } else if(scale == "normal"){
       # Set the transformation weights
       normal_min <- base::min(df[[y]])
       normal_max <- base::max(df[[y]])
+      scaling_parameters <- list(normal_min = normal_min, normal_max = normal_max)
 
       df[[base::paste(y,"normal", sep = "_")]] <- (df[[y]] - normal_min) /
         (normal_max - normal_min)
@@ -154,6 +156,8 @@ trainLM <- function(input,
       # Set the transformation weights
       standard_mean <-  base::mean(df[[y]])
       standard_sd <- stats::sd(df[[y]])
+      scaling_parameters <- list(standard_mean = standard_mean, standard_sd = standard_sd)
+
       df[[base::paste(y,"standard", sep = "_")]] <- (df[[y]] - standard_mean) /
         standard_sd
       y_temp <- y
@@ -488,6 +492,7 @@ trainLM <- function(input,
                                    step = step,
                                    # step_arg = step_arg,
                                    scale = scale,
+                                   scaling_parameters = scaling_parameters,
                                    frequency = freq),
                  series = df)
 
@@ -558,7 +563,7 @@ forecastLM <- function(model, newdata = NULL, h, pi = c(0.95, 0.80)){
     }
   }
 
-  # Setting the seasonal arguments
+  #---------------- Setting the seasonal arguments----------------
   seasonal <- model$parameters$seasonal
 
   if(!base::is.null(seasonal)){
@@ -592,7 +597,8 @@ forecastLM <- function(model, newdata = NULL, h, pi = c(0.95, 0.80)){
     }
 
   }
-  # Setting the trend arguments
+
+  #---------------- Setting the trend arguments ----------------
   trend <- trend_start <- trend_end <- NULL
   trend <- model$parameters$trend
   trend_start <- base::nrow(model$series) + 1
@@ -616,12 +622,18 @@ forecastLM <- function(model, newdata = NULL, h, pi = c(0.95, 0.80)){
     forecast_df$linear_trend <- trend_start:trend_end
   }
 
+
+  #---------------- Setting the init lags---------------
   if(!base::is.null(model$parameters$lags) && base::is.null(model$parameters$scale)){
     for(i in model$parameters$lags){
       forecast_df[[base::paste("lag_", i, sep = "")]] <- utils::tail(model$series[[model$parameters$y]], i)[1:base::nrow(forecast_df)]
     }
-  } else  if(!base::is.null(model$parameters$lags) && !base::is.null(model$parameters$scale)){
+  } else if(!base::is.null(model$parameters$lags) && !base::is.null(model$parameters$scale)){
     if(model$parameters$scale == "log"){
+      for(i in model$parameters$lags){
+        forecast_df[[base::paste("lag_scale", i, sep = "")]] <- base::log(utils::tail(model$series[[model$parameters$y]], i)[1:base::nrow(forecast_df)])
+      }
+    } else if(model$parameters$scale == "normal"){
       for(i in model$parameters$lags){
         forecast_df[[base::paste("lag_scale", i, sep = "")]] <- base::log(utils::tail(model$series[[model$parameters$y]], i)[1:base::nrow(forecast_df)])
       }
