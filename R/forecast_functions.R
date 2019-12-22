@@ -151,8 +151,11 @@ trainLM <- function(input,
       y_temp <- y
       y <- base::paste(y,"normal", sep = "_")
     } else if(scale == "standard"){
-      df[[base::paste(y,"standard", sep = "_")]] <- (df[[y]] - base::mean(df[[y]])) /
-        stats::sd(df[[y]])
+      # Set the transformation weights
+      standard_mean <-  base::mean(df[[y]])
+      standard_sd <- stats::sd(df[[y]])
+      df[[base::paste(y,"standard", sep = "_")]] <- (df[[y]] - standard_mean) /
+        standard_sd
       y_temp <- y
       y <- base::paste(y,"standard", sep = "_")
     }
@@ -442,14 +445,25 @@ trainLM <- function(input,
       tsibble::as_tsibble(index = "index")
   } else if(!base::is.null(scale) && scale == "log"){
     fitted <- base::data.frame(index = df1[[base::attributes(df1)$index2]],
-                               fitted = (stats::predict(md, newdata = df1)) * (normal_max - normal_min)  +  normal_min)
+                               fitted = base::exp(stats::predict(md, newdata = df1)))
 
     residuals <- base::data.frame(index = df1[[base::attributes(df1)$index2]],
                                   residuals =  df1[[y]] -  fitted$fitted) %>%
       tsibble::as_tsibble(index = "index")
   } else if(!base::is.null(scale) && scale == "normal"){
     fitted <- base::data.frame(index = df1[[base::attributes(df1)$index2]],
-                               fitted = base::exp(stats::predict(md, newdata = df1)))
+                               fitted = (stats::predict(md, newdata = df1)) * (normal_max - normal_min)  +  normal_min)
+
+
+
+    residuals <- base::data.frame(index = df1[[base::attributes(df1)$index2]],
+                                  residuals =  df1[[y]] -  fitted$fitted) %>%
+      tsibble::as_tsibble(index = "index")
+  } else if(!base::is.null(scale) && scale == "standard"){
+    fitted <- base::data.frame(index = df1[[base::attributes(df1)$index2]],
+                               fitted = ((stats::predict(md, newdata = df1)) * standard_sd  +  standard_mean))
+
+
 
     residuals <- base::data.frame(index = df1[[base::attributes(df1)$index2]],
                                   residuals =  df1[[y]] -  fitted$fitted) %>%
