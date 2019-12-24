@@ -41,7 +41,7 @@
 #' If set to NULL (default), no transformation will occur
 #' @param step A boolean, if set to TRUE will use apply the stepwise function for variable selection using the \code{\link[stats]{step}} function
 #' @param ... Optional, a list of arguments to pass to the \code{\link[stats]{step}} function
-#' @description Train a forecasting model with linear regression model
+#' @description Methods for forecasting regular time series data based on a linear regression model
 #' @details XXXXXXXXXXX TBD XXXXXXXXXXXXXXXXXXX
 
 
