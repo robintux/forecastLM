@@ -6,7 +6,8 @@
 \usage{
 trainLM(input, y = NULL, x = NULL, seasonal = NULL,
   trend = list(linear = TRUE, exponential = FALSE, log = FALSE, power =
-  FALSE), lags = NULL, events = NULL, step = FALSE, scale = NULL)
+  FALSE), lags = NULL, events = NULL, scale = NULL, step = FALSE,
+  ...)
 }
 \arguments{
 \item{input}{A tsibble or ts object}
@@ -36,7 +37,7 @@ The argument supports multiple seasonality cases such as daily and day of the we
 
 `linear`, a boolean variable, if set to TRUE defines a linear trend (e.g., index of 1,2,3,...,t, for a series with t observations)
 
-`power``, an numeric value, defines the polynomial degree of the series index (for example a power = 0.5 define a square root index and power = 2 defines a squared index).
+`power``, a numeric value, defines the polynomial degree of the series index (for example, a power = 0.5 define a square root index and power = 2 represents a squared index).
 By default set to NULL
 
 `exponential`, a boolean variable, if set to TRUE defines an exponential trend
@@ -48,15 +49,15 @@ By default, the `trend` argument is set to a linear trend (i.e., power = 1)}
 \item{lags}{A positive integer, defines the series lags to be used as input to the model (equivalent to AR process)}
 
 \item{events}{A list, an optional, create hot encoding variables based on date/time objects,
-where the date/time objects must align with the input object index class (may not work when the input object is 'ts'). For more information please see details}
-
-\item{step}{A boolean, if set to TRUE will use apply the stepwise function for variable selection}
+where the date/time objects must align with the input object index class (may not work when the input object is 'ts')}
 
 \item{scale}{A character, scaling options of the series, methods available -
 c("log", "normal", "standard") for log transformation, normalization, or standardization of the series, respectively.
 If set to NULL (default), no transformation will occur}
 
-\item{step_arg}{A list, passing arguments to the `step` function}
+\item{step}{A boolean, if set to TRUE will use apply the stepwise function for variable selection using the \code{\link[stats]{step}} function}
+
+\item{...}{Optional, a list of arguments to pass to the \code{\link[stats]{step}} function}
 }
 \description{
 Train a forecasting model with linear regression model
