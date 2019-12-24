@@ -24,7 +24,7 @@
 #'
 #' `linear`, a boolean variable, if set to TRUE defines a linear trend (e.g., index of 1,2,3,...,t, for a series with t observations)
 #'
-#' `power``, an numeric value, defines the polynomial degree of the series index (for example a power = 0.5 define a square root index and power = 2 defines a squared index).
+#' `power``, a numeric value, defines the polynomial degree of the series index (for example, a power = 0.5 define a square root index and power = 2 represents a squared index).
 #' By default set to NULL
 #'
 #' `exponential`, a boolean variable, if set to TRUE defines an exponential trend
@@ -35,12 +35,12 @@
 #'
 #' @param lags A positive integer, defines the series lags to be used as input to the model (equivalent to AR process)
 #' @param events A list, an optional, create hot encoding variables based on date/time objects,
-#' where the date/time objects must align with the input object index class (may not work when the input object is 'ts'). For more information please see details
-#' @param step A boolean, if set to TRUE will use apply the stepwise function for variable selection
-#' @param step_arg A list, passing arguments to the `step` function
+#' where the date/time objects must align with the input object index class (may not work when the input object is 'ts')
 #' @param scale A character, scaling options of the series, methods available -
 #' c("log", "normal", "standard") for log transformation, normalization, or standardization of the series, respectively.
 #' If set to NULL (default), no transformation will occur
+#' @param step A boolean, if set to TRUE will use apply the stepwise function for variable selection using the \code{\link[stats]{step}} function
+#' @param ... Optional, a list of arguments to pass to the \code{\link[stats]{step}} function
 #' @description Train a forecasting model with linear regression model
 #' @details XXXXXXXXXXX TBD XXXXXXXXXXXXXXXXXXX
 
@@ -53,9 +53,9 @@ trainLM <- function(input,
                     trend = list(linear = TRUE, exponential = FALSE, log = FALSE, power = FALSE),
                     lags = NULL,
                     events = NULL,
+                    scale = NULL,
                     step = FALSE,
-                    # step_arg = list(...),
-                    scale = NULL){
+                    ...){
   #----------------Set variable and functions----------------
 
   `%>%` <- magrittr::`%>%`
@@ -454,7 +454,7 @@ trainLM <- function(input,
   if(step){
     md_init <- NULL
     md_init <- stats::lm(f, data = df1)
-    md <- stats::step(md_init)
+    md <- stats::step(object = md_init, ...)
   } else(
     md <- stats::lm(f, data = df1)
   )
