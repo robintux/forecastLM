@@ -2,7 +2,7 @@
 % Please edit documentation in R/forecast_functions.R
 \name{trainLM}
 \alias{trainLM}
-\title{Train a Forecasting Model with Linear Regression Model}
+\title{Training a Forecasting Model with Linear Regression Framework}
 \usage{
 trainLM(input, y = NULL, x = NULL, seasonal = NULL,
   trend = list(linear = TRUE, exponential = FALSE, log = FALSE, power =
@@ -13,18 +13,37 @@ trainLM(input, y = NULL, x = NULL, seasonal = NULL,
 
 \item{y}{A character, the column name of the depended variable of the input object, required (and applicable) only when the input is tsibble object}
 
-\item{x}{A character, the column names of the independed variable of the input object, applicable when using tsibble object with regressors}
+\item{x}{A character, the column names of the independent variable of the input object, applicable when using tsibble object with regressors}
 
 \item{seasonal}{A character, optional, create categorical variable/s to model the single or multiple seasonal components. Supporting the
-following frequencies structure c("quarter", "month", "week", "yday", "wday", "hour") for quarterly,
-monthly, weekly, day of the year, day of the week, and hourly respectively}
+following frequencies structure:
+
+`quarter` - for quarterly frequency
+
+`month` - for monthly frequency
+
+`week` - for weekly frequency
+
+`yday` - for daily frequency
+
+`wday` - for day of the week frequency
+
+`hour` - for hourly frequency
+
+The argument supports multiple seasonality cases such as daily and day of the week effect}
 
 \item{trend}{A list, define the trend structure. Possible arguments -
-"linear", a boolean variable, if set to TRUE defines a linear trend (e.g., index of 1,2,3,...,t, for a series with t observations)
-"power", an numeric value, defines the polynomial degree of the series index (for example a power = 0.5 define a square root index and power = 2 defines a squared index). By default set to NULL
-"exponential" - a boolean variable, if set to TRUE defines an exponential trend.
-"log" - a boolean variable, if set to TRUE defines a log transformation for the trend.
-By default, the trend argument is set to a linear trend (i.e., power = 1)}
+
+`linear`, a boolean variable, if set to TRUE defines a linear trend (e.g., index of 1,2,3,...,t, for a series with t observations)
+
+`power``, an numeric value, defines the polynomial degree of the series index (for example a power = 0.5 define a square root index and power = 2 defines a squared index).
+By default set to NULL
+
+`exponential`, a boolean variable, if set to TRUE defines an exponential trend
+
+`log`, a boolean variable, if set to TRUE defines a log transformation for the trend.
+
+By default, the `trend` argument is set to a linear trend (i.e., power = 1)}
 
 \item{lags}{A positive integer, defines the series lags to be used as input to the model (equivalent to AR process)}
 
