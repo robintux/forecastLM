@@ -76,6 +76,8 @@ plot_res <- function(model, na.rm = FALSE, margin = 0.04){
 
 plot_fc <- function(forecast, theme = "normal"){
 
+  `%>%` <- magrittr::`%>%`
+
   palette_df <- palette <- maxcolors <- pi <- color_setting <- NULL
 
   pi <- base::sort(forecast$parameters$pi, decreasing = TRUE)
