@@ -692,7 +692,7 @@ forecastLM <- function(model, newdata = NULL, h, pi = c(0.95, 0.80)){
                                 se.fit = TRUE,
                                 interval = "prediction",
                                 level = pi[p])
-          scaling_parameters$standard_mean
+
           if(model$parameters$scale == "log"){
             forecast_df[[base::paste("lower", 100 * pi[p], sep = "")]][i] <- base::exp(fit$fit[,"lwr"])
             forecast_df[[base::paste("upper", 100 * pi[p], sep = "")]][i] <- base::exp(fit$fit[,"upr"])
