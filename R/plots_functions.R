@@ -276,9 +276,7 @@ plot_fc <- function(forecast, theme = "normal"){
                                name = "Forecast",
                                line = list(color = col_setting$fc_line_color, dash = col_setting$fc_line_mode)) %>%
     plotly::layout(title = base::paste(forecast$parameters$y, "Forecast",
-                                       "Series <br> Method - ",
-                                       forecast$parameters$method,
-                                       "; Horizon - ",
+                                       "<br>Horizon - ",
                                        forecast$parameters$h,
                                        sep = " "),
                    paper_bgcolor = col_setting$paper_bgcolor,
