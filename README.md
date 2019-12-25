@@ -117,3 +117,13 @@ plot_res(md)
 ```
 
 <img src="man/figures/res_plot.png" width="100%" />
+
+The `forecastLM` function forecast the future observation of the input object, and the `plot_fc` returns a plot of the forecast: 
+
+```
+fc <- forecastLM(md, h = 60)
+
+plot_fc(fc)
+```
+
+<img src="man/figures/fc_plot.png" width="100%" />
