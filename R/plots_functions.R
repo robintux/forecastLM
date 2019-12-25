@@ -6,7 +6,9 @@
 #' @examples
 #'
 #' # Train a time series forecasting model
-#' md <- trainML(input = AirPassengers, trend = list(linear = TRUE), seasonal = "month")
+#' md <- trainLM(input = AirPassengers,
+#'               trend = list(log = TRUE, linear = TRUE),
+#'               seasonal = "month")
 #'
 #' # create a residuals plot
 #' plot_res(md)
@@ -41,7 +43,7 @@ plot_res <- function(model, na.rm = FALSE, margin = 0.04){
   }
 
   max_lag <- ifelse(stats::frequency(model$series) * 2 < base::nrow(model$series), stats::frequency(model$series) * 2, base::nrow(model$series))
-  p3 <- forecastML::tsACF(model$residuals, na.rm = na.rm, plot = FALSE, max.lag = max_lag)
+  p3 <- forecastLM::tsACF(model$residuals, na.rm = na.rm, plot = FALSE, max.lag = max_lag)
 
   p4 <- plotly::plot_ly(x = model$residuals$residuals, type = "histogram",
                         marker = list(color = 'rgb(227, 119, 194)'),
