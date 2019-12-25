@@ -19,8 +19,8 @@ forecastLM(model, newdata = NULL, h, pi = c(0.95, 0.8))
 
 \item{h}{An integer, define the forecast horizon}
 
-\item{pi}{A vector with numeric values between 0 and 1, define the level of the confidence of the prediction intervals of the forecast. By default calculate the 80% and 95% prediction intervals}
+\item{pi}{A vector with numeric values between 0 and 1, define the level of the confidence of the prediction intervals of the forecast. By default calculate the 80\% and 95\% prediction intervals}
 }
 \description{
-Forecast trainML Model
+Forecast trainML models
 }
