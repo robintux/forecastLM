@@ -6,8 +6,8 @@ Author: Rami Krispin
 Authors@R: person("Rami", "Krispin", email = "rami.krispin@gmail.com",
   role = c("aut", "cre"))
 Maintainer: Rami Krispin <rami.krispin@gmail.com>
-Description: Provides a forecasting framework based on linear regression model
-License: MIT
+Description: Provides a forecasting framework based on linear regression model.
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Depends:
