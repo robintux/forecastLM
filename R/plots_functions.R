@@ -6,7 +6,9 @@
 #' @examples
 #'
 #' # Train a time series forecasting model
-#' md <- trainML(input = AirPassengers, trend = list(linear = TRUE), seasonal = "month")
+#' md <- trainLM(input = AirPassengers,
+#'               trend = list(log = TRUE, linear = TRUE),
+#'               seasonal = "month")
 #'
 #' # create a residuals plot
 #' plot_res(md)
