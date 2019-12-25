@@ -63,7 +63,7 @@ trainLM <- function(input,
 
   `%>%` <- magrittr::`%>%`
 
-  freq <- md <- time_stamp <- new_features <- residuals <- scaling_parameters <- NULL
+  freq <- md <- time_stamp <- new_features <- residuals <- scaling_parameters <- fitted  <- NULL
   #----------------Error handling----------------
   # Check the trend argument
 
@@ -129,7 +129,7 @@ trainLM <- function(input,
     df <- input
   } else if(any(class(input) == "ts")){
     y <- base::deparse(base::substitute(input))
-    df <- tsibble::as_tsibble(input) %>% setNames(c("index", y))
+    df <- tsibble::as_tsibble(input) %>% stats::setNames(c("index", y))
     if(!base::is.null(x)){
       warning("The 'x' argument cannot be used when input is a 'ts' class")
     }
@@ -536,13 +536,14 @@ trainLM <- function(input,
 #'
 #' -  The timestamp of the first observation must be the consecutive observation of the last observation of the original series
 #' @param h An integer, define the forecast horizon
-#' @param pi A vector with numeric values between 0 and 1, define the level of the confidence of the prediction intervals of the forecast. By default calculate the 80% and 95% prediction intervals
+#' @param pi A vector with numeric values between 0 and 1, define the level of the confidence of the prediction intervals of the forecast. By default calculate the 80\% and 95\% prediction intervals
+#' @description Forecast trainML models
 
 forecastLM <- function(model, newdata = NULL, h, pi = c(0.95, 0.80)){
   #----------------Set variables and functions----------------
   `%>%` <- magrittr::`%>%`
 
-  forecast_df <- df_names <- NULL
+  forecast_df <- df_names <- freq <- NULL
   #---------------- Error handling ----------------
 
   if(class(model) != "trainLM"){

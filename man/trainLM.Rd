@@ -63,5 +63,6 @@ If set to NULL (default), no transformation will occur}
 Methods for forecasting regular time series data based on a linear regression model
 }
 \details{
-XXXXXXXXXXX TBD XXXXXXXXXXXXXXXXXXX
+The trainLM function provides a flexible framework for forecasting regular time-series data with the linear regression model with the \code{\link[stats]{lm}} function.
+The function arguments enable a fast extraction and generation of new features from the input series, such as seasonal, trend, lags, outliers, and special events.
 }
