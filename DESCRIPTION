@@ -21,6 +21,7 @@ Imports:
   tsibble(>= 0.8.5)
 Suggests:
     knitr,
+    TSstudio,
     rmarkdown,
     remotes
 VignetteBuilder: knitr
