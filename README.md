@@ -109,7 +109,12 @@ F-statistic: 312.84 on 14 and 208 DF,  p-value: < 0.000000000000000222
 ```
 
 
-The `plot_res` returns the residuals plot of the model:
+The `plot_res` returns the residuals plot, including the following components:
+
+* Actuals vs. fitted
+* The corresponding residuals
+* Residuals correlation (ACF)
+* Residuals distribution
 
 
 ``` r
